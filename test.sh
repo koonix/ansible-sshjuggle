@@ -73,20 +73,17 @@ msg 'Test 1 Passed'
 # =====
 # =====
 
-msg 'Test 2: Function, Performance'
+msg 'Test 2: Performance'
 
 cat << EOF > "$dir/hosts.yml"
 all:
   hosts:
     vm:
-      ansible_ssh_host: 0.0.0.0
-      ansible_ssh_port: 12345
-      ansible_user: nobody
-      ansible_private_key_file: /dev/null
-      sshjuggle_hosts: [ 1.1.1.1,  $host ]
-      sshjuggle_ports: [ 12345678, $port ]
-      sshjuggle_users: [ somebody, $user ]
-      sshjuggle_private_key_files: [ /nonexistent, $key ]
+      ansible_host: $host
+      ansible_port: 12345
+      ansible_user: $user
+      ansible_private_key_file: $key
+      sshjuggle_ports: [ 54321, $port ]
 EOF
 
 start=$(date '+%s%N')
@@ -99,7 +96,7 @@ echo "control run duration: $control_duration ms"
 echo "test run duration:    $duration ms"
 
 # test performance
-[[ $duration -lt $(( control_duration * 10 )) ]]
+[[ $duration -lt $(( control_duration * 5 )) ]]
 
 msg 'Test 2 Passed'
 
@@ -107,6 +104,30 @@ msg 'Test 2 Passed'
 # =====
 
 msg 'Test 3: Function'
+
+cat << EOF > "$dir/hosts.yml"
+all:
+  hosts:
+    vm:
+      ansible_ssh_host: 0.0.0.0
+      ansible_ssh_port: 12345
+      ansible_user: nobody
+      ansible_private_key_file: /dev/null
+      sshjuggle_hosts: [ 1.1.1.1, null, $host ]
+      sshjuggle_ports: [ 12345678, $port ]
+      sshjuggle_users: [ somebody, $user ]
+      sshjuggle_private_key_files: [ /nonexistent, $key ]
+      sshjuggle_passwords: [ null, 12345 ]
+EOF
+
+ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml"
+
+msg 'Test 3 Passed'
+
+# =====
+# =====
+
+msg 'Test 4: Function'
 
 cat << EOF > "$dir/hosts.yml"
 all:
@@ -124,12 +145,12 @@ EOF
 
 ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml"
 
-msg 'Test 3 Passed'
+msg 'Test 4 Passed'
 
 # =====
 # =====
 
-msg 'Test 4: Fault injection'
+msg 'Test 5: Fault injection'
 
 cat << EOF > "$dir/hosts.yml"
 all:
@@ -161,12 +182,12 @@ echo "run duration: $duration ms"
 [[ $duration -gt $timeout ]]
 [[ $duration -lt $(( timeout * 3 )) ]]
 
-msg 'Test 4 Passed'
+msg 'Test 5 Passed'
 
 # =====
 # =====
 
-msg 'Test 5: Fault injection'
+msg 'Test 6: Fault injection'
 
 cat << EOF > "$dir/hosts.yml"
 all:
@@ -187,7 +208,7 @@ ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml" && code=$? || code=$?
 
 [[ $code -eq 4 ]]
 
-msg 'Test 5 Passed'
+msg 'Test 6 Passed'
 
 # =====
 # =====
