@@ -1,0 +1,41 @@
+name: test
+
+on:
+
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+env:
+  VAGRANT_DEFAULT_PROVIDER: libvirt
+  VAGRANT_FORCE_COLOR: '1'
+  ANSIBLE_FORCE_COLOR: '1'
+  PY_COLORS: '1'
+
+jobs:
+
+  test:
+
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Vagrant and libvirt
+        run: |
+          sudo apt-get update
+          sudo apt-get install vagrant libvirt-daemon-system qemu-system
+          sudo chmod 666 /run/libvirt/libvirt-sock # enable access to libvirt
+
+      - name: Run the tests
+        run: ./test.sh
