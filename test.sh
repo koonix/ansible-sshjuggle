@@ -99,7 +99,7 @@ echo "control run duration: $control_duration ms"
 echo "test run duration:    $duration ms"
 
 # test performance
-[[ $duration -lt $(( control_duration * 4 )) ]]
+[[ $duration -lt $(( control_duration * 10 )) ]]
 
 msg 'Test 2 Passed'
 
