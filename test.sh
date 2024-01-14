@@ -38,16 +38,14 @@ cat << EOF > "$dir/play.yml"
       changed_when: false
 EOF
 
-assertrc()
-{
-    echo "want return code: $1"
-    echo "got return code:  $2"
-    [[ $1 -eq $2 ]]
+assertrc() {
+	echo "want return code: $1"
+	echo "got return code:  $2"
+	[[ $1 -eq $2 ]]
 }
 
-msg()
-{
-    echo
+msg() {
+	echo
 	echo '=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#='
 	echo "= $*"
 	echo '=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#='
