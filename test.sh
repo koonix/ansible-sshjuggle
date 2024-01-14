@@ -38,6 +38,13 @@ cat << EOF > "$dir/play.yml"
       changed_when: false
 EOF
 
+assertrc()
+{
+    echo "want return code: $1"
+    echo "got return code:  $2"
+    [[ $1 -eq $2 ]]
+}
+
 msg()
 {
     echo
@@ -170,7 +177,7 @@ start=$(date '+%s%N')
 ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml" && code=$? || code=$?
 finish=$(date '+%s%N')
 
-[[ $code -eq 2 ]]
+assertrc 2 "$code"
 
 duration=$(( (finish - start) / 1000000 ))
 timeout=$(( ANSIBLE_TIMEOUT * 1000 ))
@@ -206,7 +213,7 @@ EOF
 
 ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml" && code=$? || code=$?
 
-[[ $code -eq 4 ]]
+assertrc 4 "$code"
 
 msg 'Test 6 Passed'
 
