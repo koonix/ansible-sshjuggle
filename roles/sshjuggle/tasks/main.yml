@@ -1,0 +1,139 @@
+# the method of extracting connection parameters
+# is not straight-forward for the following reasons:
+#
+# - ansible.builtin.set_fact doesn't handle templates with null values correctly
+#   and the null value should be passed explicitly.
+#
+# - the ansible.builtin.config lookup fetches the config of the host
+#   the current task is delegated to.
+
+- name: Extract null connection parameters
+  ansible.builtin.set_fact:
+    'sj_conn_{{ item }}': null
+  when: type == 'NoneType'
+  vars: &params_vars
+    value: '{{ lookup("ansible.builtin.config", item, plugin_name="ssh", plugin_type="connection") }}'
+    type:  '{{ lookup("ansible.builtin.config", item, plugin_name="ssh", plugin_type="connection") | ansible.builtin.type_debug }}'
+  loop: &params
+    - host
+    - port
+    - remote_user
+    - password
+    - private_key_file
+    - ssh_args
+    - ssh_extra_args
+    - ssh_common_args
+    - ssh_executable
+    - timeout
+    - reconnection_retries
+    - sshpass_prompt
+
+- name: Extract connection parameters
+  ansible.builtin.set_fact:
+    'sj_conn_{{ item }}': '{{ value }}'
+  when: type != 'NoneType'
+  vars: *params_vars
+  loop: *params
+
+- name: Create temporary dir
+  ansible.builtin.tempfile:
+    state: directory
+  delegate_to: localhost
+  when: sj_passwords | length > 0
+  changed_when: false
+  register: passdir
+  vars: &pass_vars
+    sj_passwords: '{{ (([sj_conn_password]) + sshjuggle_passwords) | reject("none") }}'
+
+- name: Store passwords in temporary dir
+  ansible.builtin.copy:
+    content: '{{ item }}'
+    dest: '{{ passdir.path }}/{{ num }}'
+    mode: '600'
+  delegate_to: localhost
+  when: sj_passwords | length > 0
+  changed_when: false
+  no_log: true
+  vars: *pass_vars
+  loop: '{{ sj_passwords }}'
+  loop_control:
+    index_var: num
+
+- name: Find a route to host
+  ansible.builtin.script:
+    cmd: sshjuggle.sh
+  delegate_to: localhost
+  changed_when: false
+  register: sshjuggle
+  environment:
+    # get ansible's ssh options
+    # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html
+    SJ_SSH_ARGS:            '{{ sj_conn_ssh_args }}'
+    SJ_SSH_EXTRA_ARGS:      '{{ sj_conn_ssh_extra_args }}'
+    SJ_SSH_COMMON_ARGS:     '{{ sj_conn_ssh_common_args }}'
+    SJ_SSH_EXECUTABLE:      '{{ sj_conn_ssh_executable }}'
+    SJ_SSH_CONNECT_TIMEOUT: '{{ sj_conn_timeout }}'
+    SJ_RETRIES:             '{{ sj_conn_reconnection_retries }}'
+    SJ_SSHPASS_PROMPT:      '{{ sj_conn_sshpass_prompt }}'
+    SJ_HOSTS: '{{ ([ sj_conn_host             ] + sshjuggle_hosts             ) | reject("none") | join(newline) }}'
+    SJ_PORTS: '{{ ([ sj_conn_port             ] + sshjuggle_ports             ) | reject("none") | join(newline) }}'
+    SJ_USERS: '{{ ([ sj_conn_remote_user      ] + sshjuggle_users             ) | reject("none") | join(newline) }}'
+    SJ_KEYS:  '{{ ([ sj_conn_private_key_file ] + sshjuggle_private_key_files ) | reject("none") | join(newline) }}'
+    SJ_PASSWORDS_DIR: '{{ passdir.path | default("") }}'
+  vars:
+    newline: "\n"
+
+- name: Assert success
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - params[0] == 'sshjuggle-success'
+  when: sshjuggle_fail
+  vars: &sj_vars
+    params: '{{ sshjuggle.stdout | ansible.builtin.split(tab) }}'
+    tab: "\t"
+
+- name: Set connection facts
+  ansible.builtin.set_fact:
+    '{{ item.fact }}': '{{ item.value }}'
+  when: params[0] == 'sshjuggle-success' and item.when
+  no_log: true
+  vars: *sj_vars
+  loop:
+    - fact: ansible_ssh_host
+      value: '{{ params[1] }}'
+      when:  '{{ params[1] != "" }}'
+
+    - fact: ansible_ssh_port
+      value: '{{ params[2] | int }}'
+      when:  '{{ params[2] != "" }}'
+
+    - fact: ansible_ssh_user
+      value: '{{ params[3] }}'
+      when:  '{{ params[3] != "" }}'
+
+    - fact: ansible_ssh_private_key_file
+      value: '{{ params[4] }}'
+      when:  '{{ params[4] != "" }}'
+
+    - fact: ansible_ssh_password
+      value: '{% if params[5] != "" %}{{ lookup("ansible.builtin.file", params[5]) }}{% endif %}'
+      when:  '{{ params[5] != "" }}'
+
+- name: Indicate success
+  ansible.builtin.debug:
+    msg: 'Connected to host {{ ansible_ssh_host }} port {{ ansible_ssh_port | default("22") }}'
+  when: params[0] == 'sshjuggle-success'
+  vars: *sj_vars
+
+- name: Remove temporary dir
+  ansible.builtin.file:
+    path: '{{ passdir.path }}'
+    state: absent
+  delegate_to: localhost
+  when: passdir.path is defined
+  changed_when: false
+
+- name: Gather facts
+  ansible.builtin.gather_facts: {}
+  when: sshjuggle_gather_facts

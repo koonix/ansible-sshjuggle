@@ -1,0 +1,7 @@
+sshjuggle_ports: [22]
+sshjuggle_hosts: []
+sshjuggle_users: []
+sshjuggle_passwords: []
+sshjuggle_private_key_files: []
+sshjuggle_fail: true
+sshjuggle_gather_facts: false
