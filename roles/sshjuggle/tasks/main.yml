@@ -43,7 +43,7 @@
   changed_when: false
   register: passdir
   vars: &pass_vars
-    sj_passwords: '{{ (([sj_conn_password]) + sshjuggle_passwords) | reject("none") }}'
+    sj_passwords: '{{ (( [ sj_conn_password ] ) + sshjuggle_passwords) | reject("none") }}'
 
 - name: Store passwords in temporary dir
   ansible.builtin.copy:

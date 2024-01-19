@@ -1,4 +1,4 @@
-sshjuggle_ports: [22]
+sshjuggle_ports: [ 22 ]
 sshjuggle_hosts: []
 sshjuggle_users: []
 sshjuggle_passwords: []

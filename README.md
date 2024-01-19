@@ -26,7 +26,7 @@ a behaviour that can be controlled by the `sshjuggle_gather_facts` variable.
 
 | Variable                                          | Default      | Description |
 |---------------------------------------------------|--------------|-------------|
-| `sshjuggle_ports`                                 | `[22]`       | Ports to try in addition to the [default port parameter](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html#parameter-port). |
+| `sshjuggle_ports`                                 | `[ 22 ]`     | Ports to try in addition to the [default port parameter](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html#parameter-port). |
 | `sshjuggle_hosts`                                 | `[]`         | Hosts to try in addition to the [default host parameter](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html#parameter-host). |
 | `sshjuggle_users`                                 | `[]`         | Users to try in addition to the [default user parameter](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html#parameter-remote_user). |
 | `sshjuggle_passwords`                             | `[]`         | Passwords to try in addition to the [default password parameter](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html#parameter-password). |
