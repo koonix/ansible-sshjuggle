@@ -1,6 +1,6 @@
 namespace: koonix
 name: sshjuggle
-version: 0.1.1
+version: 0.1.2
 description: Role for finding a working set of ssh connection parameters amongst multiple.
 repository: https://github.com/koonix/ansible-sshjuggle
 issues:     https://github.com/koonix/ansible-sshjuggle/issues
