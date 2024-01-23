@@ -34,13 +34,23 @@ a behaviour that can be controlled by the `sshjuggle_gather_facts` variable.
 | `sshjuggle_gather_facts`                          | `true`       | Whether to trigger Ansible's fact gathering at the end of the role. |
 | `sshjuggle_fail`                                  | `true`       | Whether to fail if sshjuggle fails to connect to the host. |
 
-#### Installation
+#### Usage
 
 Example [requirements.yml](https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-roles-and-collections-from-the-same-requirements-yml-file]) file:
 
 ```yaml
 collections:
-  - name: https://github.com/user/repo
+  - name: https://github.com/koonix/sshjuggle
     type: git
-    version: x.y.z
+    version: 0.1.2
+```
+
+Example usage in a playbook:
+
+```yaml
+- name: Roles
+  hosts: all
+  roles:
+    - { role: koonix.sshjuggle.sshjuggle, tags: always }
+    - ...
 ```
