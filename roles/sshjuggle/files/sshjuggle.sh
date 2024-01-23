@@ -29,7 +29,7 @@ rchild() {
 	local pid=$1
 	for child in $(pgrep -P "$pid" 2>/dev/null); do
 		if [[ -n $child ]]; then
-			rchild "$1"
+			rchild "$child"
 		fi
 	done
 	echo "$pid"
