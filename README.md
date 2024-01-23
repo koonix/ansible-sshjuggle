@@ -40,7 +40,7 @@ Example [requirements.yml](https://docs.ansible.com/ansible/latest/galaxy/user_g
 
 ```yaml
 collections:
-  - name: https://github.com/koonix/sshjuggle
+  - name: https://github.com/koonix/ansible-sshjuggle
     type: git
     version: 0.1.2
 ```
