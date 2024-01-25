@@ -61,8 +61,8 @@ done < <(
 	for key  in "${keys[@]}";  do
 	for passfile in "${passfiles[@]}"; do
 
-		# run at most 100 jobs in parallel
-		while [[ $(jobs -p | wc -l) -ge 100 ]]; do
+		# run at most $SJ_JOBS jobs in parallel
+		while [[ $(jobs -p | wc -l) -ge $SJ_JOBS ]]; do
 			rsleep 0.1
 		done
 

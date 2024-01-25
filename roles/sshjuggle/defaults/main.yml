@@ -5,3 +5,4 @@ sshjuggle_passwords: []
 sshjuggle_private_key_files: []
 sshjuggle_fail: true
 sshjuggle_gather_facts: true
+sshjuggle_max_jobs: 100

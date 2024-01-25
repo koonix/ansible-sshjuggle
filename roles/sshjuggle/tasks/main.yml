@@ -80,6 +80,7 @@
     SJ_USERS: '{{ ([ sj_conn_remote_user      ] + sshjuggle_users             ) | reject("none") | join(newline) }}'
     SJ_KEYS:  '{{ ([ sj_conn_private_key_file ] + sshjuggle_private_key_files ) | reject("none") | join(newline) }}'
     SJ_PASSWORDS_DIR: '{{ passdir.path | default("") }}'
+    SJ_JOBS: '{{ sshjuggle_max_jobs }}'
   vars:
     newline: "\n"
 

@@ -33,6 +33,7 @@ a behaviour that can be controlled by the `sshjuggle_gather_facts` variable.
 | `sshjuggle_private_key_files`                     | `[]`         | Private key files to try in addition to the [default private key file parameter](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html#parameter-private_key_file). |
 | `sshjuggle_gather_facts`                          | `true`       | Whether to trigger Ansible's fact gathering at the end of the role. |
 | `sshjuggle_fail`                                  | `true`       | Whether to fail if sshjuggle fails to connect to the host. |
+| `sshjuggle_max_jobs`                              | `100`        | Maximum number of simultaneous jobs to use for testing out parameters. Set to a lower number if your system is hitting the process count limit. |
 
 #### Usage
 
