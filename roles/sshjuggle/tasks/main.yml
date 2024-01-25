@@ -28,7 +28,7 @@
     - reconnection_retries
     - sshpass_prompt
 
-- name: Extract connection parameters
+- name: Extract non-null connection parameters
   ansible.builtin.set_fact:
     'sj_conn_{{ item }}': '{{ value }}'
   when: type != 'NoneType'
@@ -123,7 +123,7 @@
 
 - name: Indicate success
   ansible.builtin.debug:
-    msg: 'Connected to host {{ ansible_ssh_host }} port {{ ansible_ssh_port | default("22") }}'
+    msg: 'Connected to [{{ ansible_ssh_host }}]:{{ ansible_ssh_port | default("22") }}'
   when: params[0] == 'sshjuggle-success'
   vars: *sj_vars
 
