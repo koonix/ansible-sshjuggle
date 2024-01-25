@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-: ${SJ_RETRIES:='0'}
-: ${SJ_SSH_EXECUTABLE:='ssh'}
-: ${SJ_SSH_CONNECT_TIMEOUT:='10'}
-
-readarray -t hosts <<< "${SJ_HOSTS:-}"
-readarray -t ports <<< "${SJ_PORTS:-}"
-readarray -t users <<< "${SJ_USERS:-}"
-readarray -t keys  <<< "${SJ_KEYS:-}"
+readarray -t hosts <<< "$SJ_HOSTS"
+readarray -t ports <<< "$SJ_PORTS"
+readarray -t users <<< "$SJ_USERS"
+readarray -t keys  <<< "$SJ_KEYS"
 
 readarray -t passfiles <<< "$(
-	if [[ -n ${SJ_PASSWORDS_DIR:-} ]]; then
+	if [[ -n $SJ_PASSWORDS_DIR ]]; then
 		for f in "$SJ_PASSWORDS_DIR"/*; do
 			if [[ -e $f ]]; then
 				printf '%s\n' "$f"
@@ -83,9 +79,9 @@ done < <(
 					-o StrictHostKeyChecking=no \
 					-o ControlPath=none \
 					-o ConnectionAttempts=1 \
-					${SJ_SSH_ARGS:-} \
-					${SJ_SSH_EXTRA_ARGS:-} \
-					${SJ_SSH_COMMON_ARGS:-} \
+					$SJ_SSH_ARGS \
+					$SJ_SSH_EXTRA_ARGS \
+					$SJ_SSH_COMMON_ARGS \
 					-o ConnectTimeout="$SJ_SSH_CONNECT_TIMEOUT" \
 					${port:+-o Port="$port"} \
 					${user:+-o User="$user"} \

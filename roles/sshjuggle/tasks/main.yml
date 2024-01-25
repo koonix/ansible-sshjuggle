@@ -68,13 +68,13 @@
   environment:
     # get ansible's ssh options
     # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html
-    SJ_SSH_ARGS:            '{{ sj_conn_ssh_args }}'
-    SJ_SSH_EXTRA_ARGS:      '{{ sj_conn_ssh_extra_args }}'
-    SJ_SSH_COMMON_ARGS:     '{{ sj_conn_ssh_common_args }}'
-    SJ_SSH_EXECUTABLE:      '{{ sj_conn_ssh_executable }}'
-    SJ_SSH_CONNECT_TIMEOUT: '{{ sj_conn_timeout }}'
-    SJ_RETRIES:             '{{ sj_conn_reconnection_retries }}'
-    SJ_SSHPASS_PROMPT:      '{{ sj_conn_sshpass_prompt }}'
+    SJ_SSH_ARGS:            '{{ sj_conn_ssh_args or "" }}'
+    SJ_SSH_EXTRA_ARGS:      '{{ sj_conn_ssh_extra_args or "" }}'
+    SJ_SSH_COMMON_ARGS:     '{{ sj_conn_ssh_common_args or "" }}'
+    SJ_SSH_EXECUTABLE:      '{{ sj_conn_ssh_executable or "ssh" }}'
+    SJ_SSH_CONNECT_TIMEOUT: '{{ sj_conn_timeout or "10" }}'
+    SJ_RETRIES:             '{{ sj_conn_reconnection_retries or "0" }}'
+    SJ_SSHPASS_PROMPT:      '{{ sj_conn_sshpass_prompt or "" }}'
     SJ_HOSTS: '{{ ([ sj_conn_host             ] + sshjuggle_hosts             ) | reject("none") | join(newline) }}'
     SJ_PORTS: '{{ ([ sj_conn_port             ] + sshjuggle_ports             ) | reject("none") | join(newline) }}'
     SJ_USERS: '{{ ([ sj_conn_remote_user      ] + sshjuggle_users             ) | reject("none") | join(newline) }}'
