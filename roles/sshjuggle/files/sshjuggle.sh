@@ -24,22 +24,29 @@ readarray -t passfiles <<< "$(
 exec {sleepfd}<> <(:)
 rsleep() { read -t "$1" -u "$sleepfd" ||: ;}
 
-# get child processes of the given pid recursively
-rchild() {
+# get child processes of the given pid
+pchildren() {
 	local pid=$1
-	for child in $(pgrep -P "$pid" 2>/dev/null); do
+	# use procfs if available, otherwise use pgrep which is more portable
+	cat /proc/"$pid"/task/*/children <&- 2>/dev/null || pgrep -P "$pid" 2>/dev/null
+}
+
+# get descendent processes of the given pid, including itself
+pdesc() {
+	local pid=$1
+	for child in $(pchildren "$pid"); do
 		if [[ -n $child ]]; then
-			rchild "$child"
+			pdesc "$child"
 		fi
 	done
 	echo "$pid"
 }
 
-# kill child processes of the given pid recursively
-rkill() {
+# kill descendent processes of the given pid
+pdesckill() {
 	local pid=$1
-	for child in $(rchild "$pid"); do
-		if [[ $child -ne $pid ]]; then
+	for child in $(pdesc "$pid"); do
+		if [[ $child -ne $pid ]]; then # exclude the given pid
 			kill -- "$child" 2>/dev/null ||:
 		fi
 	done
@@ -49,7 +56,7 @@ while IFS= read -r result; do
 	case $result in
 		sshjuggle-success*)
 			echo "$result"
-			rkill "$$"
+			pdesckill "$$"
 			exit
 		;;
 	esac
