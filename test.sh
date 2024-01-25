@@ -39,7 +39,8 @@ cat << EOF > "$dir/play.yml"
   roles:
     - sshjuggle
   tasks:
-    - shell: echo hi
+    - ansible.builtin.shell:
+        cmd: echo success
       changed_when: false
 EOF
 
