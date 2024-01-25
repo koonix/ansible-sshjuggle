@@ -11,19 +11,24 @@ export ANSIBLE_GATHERING=explicit
 
 vagrant up
 
+host1='' host2=''
+port1='' port2=''
+user1='' user2=''
+key1=''  key2=''
+
 while IFS= read -r line; do
 	case $line in
-		*' HostName '*     ) host=${line##* HostName } ;;
-		*' Port '*         ) port=${line##* Port } ;;
-		*' User '*         ) user=${line##* User } ;;
-		*' IdentityFile '* ) key=${line##* IdentityFile } ;;
+		*' HostName '*     ) val=${line##* HostName };     [[ -z $host1 ]] && host1=$val || host2=$val ;;
+		*' Port '*         ) val=${line##* Port };         [[ -z $port1 ]] && port1=$val || port2=$val ;;
+		*' User '*         ) val=${line##* User };         [[ -z $user1 ]] && user1=$val || user2=$val ;;
+		*' IdentityFile '* ) val=${line##* IdentityFile }; [[ -z $key1  ]] && key1=$val  || key2=$val  ;;
 	esac
 done < <(vagrant ssh-config)
 
-[[ -n $host ]]
-[[ -n $port ]]
-[[ -n $user ]]
-[[ -n $key  ]]
+[[ -n $host1 ]]; [[ -n $host2 ]]
+[[ -n $port1 ]]; [[ -n $port2 ]]
+[[ -n $user1 ]]; [[ -n $user2 ]]
+[[ -n $key1  ]]; [[ -n $key2  ]]
 
 dir=$(mktemp -d)
 trap 'rm -r -- "$dir"' EXIT
@@ -36,6 +41,19 @@ cat << EOF > "$dir/play.yml"
   tasks:
     - shell: echo hi
       changed_when: false
+EOF
+
+mkdir "$dir/hosts"
+
+cat << EOF > "$dir/hosts/vm2.yml"
+all:
+  hosts:
+    vm2:
+      ansible_host: $host2
+      ansible_port: 12345
+      ansible_user: $user2
+      ansible_private_key_file: $key2
+      sshjuggle_ports: [ 54321, $port2 ]
 EOF
 
 assertrc() {
@@ -57,18 +75,18 @@ msg() {
 
 msg 'Test 1: Control'
 
-cat << EOF > "$dir/hosts.yml"
+cat << EOF > "$dir/hosts/vm1.yml"
 all:
   hosts:
-    vm:
-      ansible_host: $host
-      ansible_port: $port
-      ansible_user: $user
-      ansible_private_key_file: $key
+    vm1:
+      ansible_host: $host1
+      ansible_port: $port1
+      ansible_user: $user1
+      ansible_private_key_file: $key1
 EOF
 
 start=$(date '+%s%N')
-ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml"
+ansible-playbook -i "$dir/hosts" "$dir/play.yml"
 finish=$(date '+%s%N')
 
 control_duration=$(( (finish - start) / 1000000 ))
@@ -80,19 +98,19 @@ msg 'Test 1 Passed'
 
 msg 'Test 2: Performance'
 
-cat << EOF > "$dir/hosts.yml"
+cat << EOF > "$dir/hosts/vm1.yml"
 all:
   hosts:
-    vm:
-      ansible_host: $host
+    vm1:
+      ansible_host: $host1
       ansible_port: 12345
-      ansible_user: $user
-      ansible_private_key_file: $key
-      sshjuggle_ports: [ 54321, $port ]
+      ansible_user: $user1
+      ansible_private_key_file: $key1
+      sshjuggle_ports: [ 54321, $port1 ]
 EOF
 
 start=$(date '+%s%N')
-ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml"
+ansible-playbook -i "$dir/hosts" "$dir/play.yml"
 finish=$(date '+%s%N')
 
 duration=$(( (finish - start) / 1000000 ))
@@ -110,22 +128,22 @@ msg 'Test 2 Passed'
 
 msg 'Test 3: Function'
 
-cat << EOF > "$dir/hosts.yml"
+cat << EOF > "$dir/hosts/vm1.yml"
 all:
   hosts:
-    vm:
+    vm1:
       ansible_ssh_host: 0.0.0.0
       ansible_ssh_port: 12345
       ansible_user: nobody
       ansible_private_key_file: /dev/null
-      sshjuggle_hosts: [ 1.1.1.1, null, $host ]
-      sshjuggle_ports: [ 12345678, $port ]
-      sshjuggle_users: [ somebody, $user ]
-      sshjuggle_private_key_files: [ /nonexistent, $key ]
+      sshjuggle_hosts: [ 1.1.1.1, null, $host1 ]
+      sshjuggle_ports: [ 12345678, $port1 ]
+      sshjuggle_users: [ somebody, $user1 ]
+      sshjuggle_private_key_files: [ /nonexistent, $key1 ]
       sshjuggle_passwords: [ null, 12345 ]
 EOF
 
-ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml"
+ansible-playbook -i "$dir/hosts" "$dir/play.yml"
 
 msg 'Test 3 Passed'
 
@@ -134,21 +152,21 @@ msg 'Test 3 Passed'
 
 msg 'Test 4: Function'
 
-cat << EOF > "$dir/hosts.yml"
+cat << EOF > "$dir/hosts/vm1.yml"
 all:
   hosts:
-    vm:
-      ansible_port: $port
-      ansible_ssh_user: $user
+    vm1:
+      ansible_port: $port1
+      ansible_ssh_user: $user1
       ansible_ssh_password: somepassword
-      sshjuggle_hosts: [ $host ]
+      sshjuggle_hosts: [ $host1 ]
       sshjuggle_users: [ nobody, somebody ]
-      sshjuggle_private_key_files: [ /dev/null, $key, /nonexistent ]
+      sshjuggle_private_key_files: [ /dev/null, $key1, /nonexistent ]
       sshjuggle_passwords: [ anotherpassword, '' ]
       sshjuggle_gather_facts: true
 EOF
 
-ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml"
+ansible-playbook -i "$dir/hosts" "$dir/play.yml"
 
 msg 'Test 4 Passed'
 
@@ -157,22 +175,22 @@ msg 'Test 4 Passed'
 
 msg 'Test 5: Fault injection'
 
-cat << EOF > "$dir/hosts.yml"
+cat << EOF > "$dir/hosts/vm1.yml"
 all:
   hosts:
-    vm:
+    vm1:
       ansible_host: 0.0.0.0
       ansible_port: 12345
       ansible_user: nobody
       ansible_private_key_file: /dev/null
       sshjuggle_hosts: [ 1.1.1.1 ]
-      sshjuggle_ports: [ 12345678, $port ]
-      sshjuggle_users: [ somebody, $user ]
-      sshjuggle_private_key_files: [ /nonexistent, $key ]
+      sshjuggle_ports: [ 12345678, $port1 ]
+      sshjuggle_users: [ somebody, $user1 ]
+      sshjuggle_private_key_files: [ /nonexistent, $key1 ]
 EOF
 
 start=$(date '+%s%N')
-ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml" && code=$? || code=$?
+ansible-playbook -i "$dir/hosts" "$dir/play.yml" && code=$? || code=$?
 finish=$(date '+%s%N')
 
 assertrc 2 "$code"
@@ -194,22 +212,22 @@ msg 'Test 5 Passed'
 
 msg 'Test 6: Fault injection'
 
-cat << EOF > "$dir/hosts.yml"
+cat << EOF > "$dir/hosts/vm1.yml"
 all:
   hosts:
-    vm:
+    vm1:
       ansible_host: 0.0.0.0
       ansible_port: 12345
       ansible_user: nobody
       ansible_private_key_file: /dev/null
       sshjuggle_fail: false
       sshjuggle_hosts: [ 1.1.1.1 ]
-      sshjuggle_ports: [ 12345678, $port ]
-      sshjuggle_users: [ somebody, $user ]
-      sshjuggle_private_key_files: [ /nonexistent, $key ]
+      sshjuggle_ports: [ 12345678, $port1 ]
+      sshjuggle_users: [ somebody, $user1 ]
+      sshjuggle_private_key_files: [ /nonexistent, $key1 ]
 EOF
 
-ansible-playbook -i "$dir/hosts.yml" "$dir/play.yml" && code=$? || code=$?
+ansible-playbook -i "$dir/hosts" "$dir/play.yml" && code=$? || code=$?
 
 assertrc 4 "$code"
 
