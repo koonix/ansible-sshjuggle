@@ -38,5 +38,10 @@ jobs:
           sudo apt-get install vagrant libvirt-daemon-system qemu-system
           sudo chmod 666 /run/libvirt/libvirt-sock # enable access to libvirt
 
+      - name: Configure ssh
+        run: |
+          mkdir -p ~/.ssh
+          echo 'StrictHostKeyChecking accept-new' >> ~/.ssh/config
+
       - name: Run the tests
         run: ./test.sh
