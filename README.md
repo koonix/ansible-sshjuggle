@@ -1,5 +1,7 @@
 # ansible-sshjuggle
 
+[![Latest Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fkoonix%2Fansible-sshjuggle%2Fmain%2Fgalaxy.yml&query=version&label=Latest%20Version&color=%23347d39)](https://github.com/koonix/ansible-sshjuggle/tags)
+
 Ansible collection that comes with a role
 for finding a working set of ssh connection parameters
 amongst multiple specified parameters.
