@@ -42,7 +42,7 @@ main() {
 					timeout 10m \
 						${passfile:+sshpass -f "$passfile" ${SJ_SSHPASS_PROMPT:+-P "$SJ_SSHPASS_PROMPT"}} \
 						"$SJ_SSH_EXECUTABLE" \
-						-o UserKnownHostsFile=no \
+						-o UserKnownHostsFile=none \
 						-o StrictHostKeyChecking=no \
 						-o ControlPath=none \
 						-o ConnectionAttempts=1 \
