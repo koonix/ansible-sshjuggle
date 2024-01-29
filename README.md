@@ -45,7 +45,7 @@ Example [requirements.yml](https://docs.ansible.com/ansible/latest/galaxy/user_g
 collections:
   - name: https://github.com/koonix/ansible-sshjuggle
     type: git
-    version: 0.1.6
+    version: 0.1.7
 ```
 
 Example usage in a playbook:
