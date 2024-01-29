@@ -101,21 +101,41 @@
   no_log: true
   vars: *sj_vars
   loop:
+    - fact: ansible_host
+      value: '{{ params[1] }}'
+      when:  '{{ params[1] != "" }}'
+
     - fact: ansible_ssh_host
       value: '{{ params[1] }}'
       when:  '{{ params[1] != "" }}'
+
+    - fact: ansible_port
+      value: '{{ params[2] | int }}'
+      when:  '{{ params[2] != "" }}'
 
     - fact: ansible_ssh_port
       value: '{{ params[2] | int }}'
       when:  '{{ params[2] != "" }}'
 
+    - fact: ansible_user
+      value: '{{ params[3] }}'
+      when:  '{{ params[3] != "" }}'
+
     - fact: ansible_ssh_user
       value: '{{ params[3] }}'
       when:  '{{ params[3] != "" }}'
 
+    - fact: ansible_private_key_file
+      value: '{{ params[4] }}'
+      when:  '{{ params[4] != "" }}'
+
     - fact: ansible_ssh_private_key_file
       value: '{{ params[4] }}'
       when:  '{{ params[4] != "" }}'
+
+    - fact: ansible_password
+      value: '{% if params[5] != "" %}{{ lookup("ansible.builtin.file", params[5]) }}{% endif %}'
+      when:  '{{ params[5] != "" }}'
 
     - fact: ansible_ssh_password
       value: '{% if params[5] != "" %}{{ lookup("ansible.builtin.file", params[5]) }}{% endif %}'
